@@ -1,0 +1,10 @@
+{{#if todos.length}}
+  {{#each todos}}
+    {{> todo-item this}}
+  {{/each}}
+{{else}}
+  <li class="todo todo--empty">
+    <i class="fa-regular fa-circle-check todo--empty__icon"></i>
+    <span>All clear — add a task above to get started.</span>
+  </li>
+{{/if}}

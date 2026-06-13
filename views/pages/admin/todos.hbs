@@ -1,0 +1,36 @@
+<section class="page-head">
+  <h1>All Todos</h1>
+  <p class="muted">Every task across all users.</p>
+</section>
+
+<div class="card">
+  <table class="table">
+    <thead>
+      <tr><th>Title</th><th>Owner</th><th>Priority</th><th>Status</th><th>Due</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {{#each todos}}
+        <tr class="{{#if this.isDone}}row--done{{/if}}">
+          <td>{{this.title}}</td>
+          <td>{{this.ownerEmail}}</td>
+          <td><span class="badge badge--{{this.priority}}">{{this.priority}}</span></td>
+          <td><span class="badge badge--{{this.status}}">{{this.status}}</span></td>
+          <td>{{#if this.dueAt}}{{formatDate this.dueAt}}{{else}}—{{/if}}</td>
+          <td class="actions-cell">
+            <form method="post" action="/admin/todos/{{this.id}}/toggle">
+              <button type="submit" class="btn btn--ghost btn--sm">
+                {{#if this.isDone}}Reopen{{else}}Complete{{/if}}
+              </button>
+            </form>
+            <form method="post" action="/admin/todos/{{this.id}}/delete"
+              onsubmit="return confirm('Delete this todo?')">
+              <button type="submit" class="btn btn--danger btn--sm">Delete</button>
+            </form>
+          </td>
+        </tr>
+      {{else}}
+        <tr><td colspan="6" class="muted">No todos yet.</td></tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>

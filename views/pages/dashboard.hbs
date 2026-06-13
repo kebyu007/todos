@@ -1,0 +1,32 @@
+<section class="page-head">
+  <h1>Hello, {{currentUser.username}} <i class="fa-brands fa-blackberry"></i></h1>
+  <p class="muted">Let's get things done today.</p>
+</section>
+
+<form class="composer card" hx-post="/todos" hx-target="#todo-list"
+      hx-swap="afterbegin" hx-on::after-request="if(event.detail.successful) this.reset()">
+  <input class="composer__title" type="text" name="title" placeholder="Add a new task…" required autofocus />
+  <div class="composer__meta">
+    <input class="input input--pill" type="text" name="dueAt" data-date placeholder="Set due date" aria-label="Due date" />
+    {{> priority-select id="new" selected="medium"}}
+    <input class="input input--pill composer__tags" type="text" name="tags" placeholder="Tags" aria-label="Tags" />
+    <button type="submit" class="btn btn--primary composer__add"><i class="fa-solid fa-plus"></i> Add task</button>
+  </div>
+</form>
+
+<div class="toolbar">
+  <div class="filters">
+    {{#each filters}}
+      <a class="chip {{#if (eq this ../filter)}}chip--active{{/if}}"
+         hx-get="/todos?filter={{this}}" hx-target="#todo-list" hx-swap="innerHTML"
+         href="/?filter={{this}}">{{this}}</a>
+    {{/each}}
+  </div>
+  <input class="input input--search input--pill" type="search" name="search" placeholder="Search…"
+         value="{{search}}" hx-get="/todos" hx-target="#todo-list" hx-swap="innerHTML"
+         hx-trigger="input changed delay:300ms, search" />
+</div>
+
+<ul class="todo-list" id="todo-list">
+  {{> todo-list}}
+</ul>

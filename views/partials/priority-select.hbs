@@ -1,0 +1,20 @@
+{{!-- iOS/One-UI style segmented priority picker. Params: id, selected --}}
+<div class="segmented" role="radiogroup" aria-label="Priority">
+  <input class="segmented__input" type="radio" id="prio-{{id}}-low" name="priority" value="low"
+    {{#if (eq selected "low")}}checked{{/if}} />
+  <label class="segmented__opt segmented__opt--low" for="prio-{{id}}-low">
+    <i class="fa-solid fa-flag"></i><span>Low</span>
+  </label>
+
+  <input class="segmented__input" type="radio" id="prio-{{id}}-medium" name="priority" value="medium"
+    {{#if (eq selected "medium")}}checked{{/if}} />
+  <label class="segmented__opt segmented__opt--medium" for="prio-{{id}}-medium">
+    <i class="fa-solid fa-flag"></i><span>Medium</span>
+  </label>
+
+  <input class="segmented__input" type="radio" id="prio-{{id}}-high" name="priority" value="high"
+    {{#if (eq selected "high")}}checked{{/if}} />
+  <label class="segmented__opt segmented__opt--high" for="prio-{{id}}-high">
+    <i class="fa-solid fa-flag"></i><span>High</span>
+  </label>
+</div>

@@ -1,0 +1,39 @@
+<section class="page-head">
+  <h1>Users</h1>
+  <p class="muted">Change roles or remove accounts.</p>
+</section>
+
+<div class="card">
+  <table class="table">
+    <thead>
+      <tr><th>User</th><th>Email</th><th>Role</th><th>Timezone</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {{#each users}}
+        <tr>
+          <td>{{this.username}}{{#if this.isSelf}} <span class="tag">you</span>{{/if}}</td>
+          <td>{{this.email}}</td>
+          <td>
+            <form method="post" action="/admin/users/{{this.id}}" class="inline-form">
+              <select name="role" class="input input--sm">
+                {{#each ../roles}}
+                  <option value="{{this}}" {{#if (eq this ../role)}}selected{{/if}}>{{this}}</option>
+                {{/each}}
+              </select>
+              <button type="submit" class="btn btn--ghost btn--sm">Save</button>
+            </form>
+          </td>
+          <td>{{this.timezone}}</td>
+          <td>
+            {{#unless this.isSelf}}
+              <form method="post" action="/admin/users/{{this.id}}/delete"
+                onsubmit="return confirm('Delete {{this.email}} and all access?')">
+                <button type="submit" class="btn btn--danger btn--sm">Delete</button>
+              </form>
+            {{/unless}}
+          </td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>

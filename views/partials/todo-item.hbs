@@ -1,0 +1,27 @@
+<li class="todo {{#if isDone}}todo--done{{/if}}" data-priority="{{priority}}"
+    id="todo-{{id}}" hx-target="this" hx-swap="outerHTML">
+  <form class="todo__toggle" hx-post="/todos/{{id}}/toggle">
+    <input type="checkbox" onchange="this.form.requestSubmit()" {{#if isDone}}checked{{/if}}
+      aria-label="Toggle complete" />
+  </form>
+  <div class="todo__body">
+    <span class="todo__title">{{title}}</span>
+    <span class="badge badge--{{priority}}">{{priority}}</span>
+    {{#if dueAt}}<time class="todo__due"><i class="fa-regular fa-calendar"></i> {{formatDate dueAt}}</time>{{/if}}
+    {{#if description}}<p class="todo__desc">{{description}}</p>{{/if}}
+    {{#if tags.length}}
+      <span class="todo__tags">
+        {{#each tags}}<span class="tag">#{{this}}</span>{{/each}}
+      </span>
+    {{/if}}
+  </div>
+  <div class="todo__actions">
+    <button class="icon-btn icon-btn--sm" hx-get="/todos/{{id}}/edit" title="Edit" aria-label="Edit">
+      <i class="fa-solid fa-pen"></i>
+    </button>
+    <button class="icon-btn icon-btn--sm icon-btn--danger" hx-delete="/todos/{{id}}"
+      hx-confirm="Delete this task?" hx-swap="outerHTML swap:300ms" title="Delete" aria-label="Delete">
+      <i class="fa-solid fa-trash-can"></i>
+    </button>
+  </div>
+</li>

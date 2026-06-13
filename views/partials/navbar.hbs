@@ -1,0 +1,47 @@
+<header class="navbar">
+  <div class="navbar__inner">
+    <a href="/" class="brand">
+      <span class="brand__mark"><i class="fa-solid fa-check"></i></span>
+      <span class="brand__name">Todos</span>
+    </a>
+
+    <nav class="navbar__links">
+      {{#if currentUser}}
+        <a href="/" class="navlink"><i class="fa-solid fa-list-check"></i> Tasks</a>
+        {{#if (eq currentUser.role "admin")}}
+          <a href="/admin" class="navlink navlink--accent"><i class="fa-solid fa-shield-halved"></i> Admin</a>
+        {{/if}}
+
+        <button type="button" class="icon-btn" title="Toggle theme" @click="toggle()">
+          <i class="fa-solid" :class="dark ? 'fa-sun' : 'fa-moon'"></i>
+        </button>
+
+        <div class="usermenu" x-data="{ open: false }" @click.outside="open = false">
+          <button type="button" class="usermenu__trigger" @click="open = !open">
+            {{#if currentUser.avatarUrl}}
+              <img class="avatar" src="{{currentUser.avatarUrl}}" alt="{{currentUser.username}}" />
+            {{else}}
+              <span class="avatar avatar--initials">{{firstLetter currentUser.username}}</span>
+            {{/if}}
+            <span class="usermenu__name">{{currentUser.username}}</span>
+            <i class="usermenu__chev fa-solid fa-chevron-down"></i>
+          </button>
+          <div class="usermenu__panel" x-show="open" x-transition x-cloak>
+            <a href="/profile" class="usermenu__item"><i class="fa-regular fa-user"></i> Profile</a>
+            <form method="post" action="/auth/logout">
+              <button type="submit" class="usermenu__item usermenu__item--danger">
+                <i class="fa-solid fa-right-from-bracket"></i> Sign out
+              </button>
+            </form>
+          </div>
+        </div>
+      {{else}}
+        <button type="button" class="icon-btn" title="Toggle theme" @click="toggle()">
+          <i class="fa-solid" :class="dark ? 'fa-sun' : 'fa-moon'"></i>
+        </button>
+        <a href="/login" class="navlink">Sign in</a>
+        <a href="/register" class="btn btn--primary btn--sm">Get started</a>
+      {{/if}}
+    </nav>
+  </div>
+</header>

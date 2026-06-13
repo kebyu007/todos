@@ -1,0 +1,4 @@
+you should also add google login and add google id for users entity
+and it should be unique and handled not twice register
+and all errors and messages should be contenprory toast message
+. And you should also create a full overview falder for creating best ui/ux and edge to age designable frontend creating

@@ -1,0 +1,37 @@
+<section class="page-head">
+  <h1>Admin Overview</h1>
+  <p class="muted">Full access — manage every user and todo.</p>
+</section>
+
+<div class="stats">
+  <div class="card stat"><i class="stat__icon fa-solid fa-users"></i><span class="stat__num">{{stats.users}}</span><span class="stat__label">Users</span></div>
+  <div class="card stat"><i class="stat__icon fa-solid fa-list-check"></i><span class="stat__num">{{stats.todos}}</span><span class="stat__label">Todos</span></div>
+  <div class="card stat"><i class="stat__icon fa-solid fa-circle-check"></i><span class="stat__num">{{stats.done}}</span><span class="stat__label">Completed</span></div>
+  <div class="card stat"><i class="stat__icon fa-solid fa-user-shield"></i><span class="stat__num">{{stats.admins}}</span><span class="stat__label">Admins</span></div>
+</div>
+
+<div class="admin-grid">
+  <div class="card">
+    <div class="card__head"><h2>Recent users</h2><a href="/admin/users">Manage →</a></div>
+    <table class="table">
+      <thead><tr><th>User</th><th>Email</th><th>Role</th></tr></thead>
+      <tbody>
+        {{#each recentUsers}}
+          <tr><td>{{this.username}}</td><td>{{this.email}}</td><td><span class="badge">{{this.role}}</span></td></tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card__head"><h2>Recent todos</h2><a href="/admin/todos">Manage →</a></div>
+    <table class="table">
+      <thead><tr><th>Title</th><th>Owner</th><th>Status</th></tr></thead>
+      <tbody>
+        {{#each recentTodos}}
+          <tr><td>{{this.title}}</td><td>{{this.ownerEmail}}</td><td><span class="badge badge--{{this.status}}">{{this.status}}</span></td></tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</div>

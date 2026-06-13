@@ -1,0 +1,77 @@
+<section class="page-head">
+  <h1>Profile</h1>
+  <p class="muted">Manage your account details</p>
+</section>
+
+<div class="card">
+  <div class="flex" style="gap:14px; margin-bottom:18px;">
+    {{#if user.avatarUrl}}
+      <img class="avatar" style="width:56px;height:56px;" src="{{user.avatarUrl}}" alt="{{user.username}}" />
+    {{else}}
+      <span class="avatar avatar--initials" style="width:56px;height:56px;font-size:1.3rem;">{{firstLetter user.username}}</span>
+    {{/if}}
+    <div>
+      <strong>{{user.username}}</strong>
+      <div class="muted" style="font-size:0.88rem;">{{user.email}}</div>
+      <div class="flex" style="gap:6px;margin-top:6px;">
+        <span class="badge">{{user.role}}</span>
+        {{#if user.googleId}}<span class="badge badge--in_progress">Google linked</span>{{/if}}
+      </div>
+    </div>
+  </div>
+
+  <form method="post" action="/profile" class="form">
+    <label class="field">
+      <span>Username</span>
+      <input class="input" type="text" name="username" value="{{user.username}}" minlength="2" />
+    </label>
+    <label class="field">
+      <span>Email</span>
+      <input class="input" type="email" name="email" value="{{user.email}}" />
+    </label>
+    <label class="field">
+      <span>Timezone (IANA)</span>
+      <input class="input" type="text" name="timezone" value="{{user.timezone}}" placeholder="e.g. Asia/Tashkent" />
+    </label>
+    <div class="field field--inline">
+      <span>Enable notifications</span>
+      <input type="hidden" name="notificationsEnabled" value="false" />
+      <label class="switch">
+        <input type="checkbox" name="notificationsEnabled" value="true"
+          {{#if user.notificationsEnabled}}checked{{/if}} />
+        <span class="switch__track"></span>
+      </label>
+    </div>
+    <button type="submit" class="btn btn--primary">Save changes</button>
+  </form>
+</div>
+
+<div class="card">
+  <div class="card__head">
+    <h2><i class="fa-brands fa-telegram" style="color:#229ED9"></i> Telegram reminders</h2>
+    {{#if telegram.connected}}<span class="badge badge--done">Connected</span>{{/if}}
+  </div>
+
+  {{#unless telegram.enabled}}
+    <p class="muted mb-0">Telegram notifications aren't configured on this server.</p>
+  {{else}}
+    {{#if telegram.connected}}
+      <p class="text-soft">Your account is linked. You'll get a reminder <strong>1 hour before</strong>
+        and <strong>at</strong> each task's due time — and you can manage tasks right from the chat.</p>
+      <form method="post" action="/profile/telegram/disconnect">
+        <button type="submit" class="btn btn--danger">Disconnect Telegram</button>
+      </form>
+    {{else if telegram.linkUrl}}
+      <p class="text-soft">Almost there — open Telegram and press <em>Start</em> to finish linking.</p>
+      <a href="{{telegram.linkUrl}}" target="_blank" rel="noopener" class="btn btn--primary">Open Telegram →</a>
+      <form method="post" action="/profile/telegram/connect" style="margin-top:10px;">
+        <button type="submit" class="btn btn--ghost btn--sm">Regenerate link</button>
+      </form>
+    {{else}}
+      <p class="text-soft">Link your Telegram to control tasks from chat and get timely reminders.</p>
+      <form method="post" action="/profile/telegram/connect">
+        <button type="submit" class="btn btn--primary">Connect Telegram</button>
+      </form>
+    {{/if}}
+  {{/unless}}
+</div>
