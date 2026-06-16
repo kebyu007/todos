@@ -49,6 +49,22 @@ export class NotificationsService {
         const fireAt = dueMs - reminder.offsetMinutes * MINUTE;
         if (fireAt > now) continue; // not time yet
 
+        // If a closer reminder (smaller offset) is already due this sweep,
+        // skip this one silently — avoids two messages firing simultaneously
+        // when the app restarts after missing the earlier window.
+        const hasCloserPendingReminder = todo.reminders.some(
+          (r) =>
+            !r.sent &&
+            r.offsetMinutes < reminder.offsetMinutes &&
+            dueMs - r.offsetMinutes * MINUTE <= now,
+        );
+        if (hasCloserPendingReminder) {
+          reminder.sent = true;
+          reminder.sentAt = new Date();
+          changed = true;
+          continue;
+        }
+
         // Only deliver to opted-in, linked users within the freshness window.
         const deliverable =
           owner?.telegramChatId &&
