@@ -44,7 +44,7 @@ export class CreateTodoDto {
       true,
     );
     
-    return parsed.isValid() ? parsed.format('YYYY-MM-DDTHH:mm:ss.SSSZ') : value;
+    return parsed.isValid() ? parsed.format('YYYY-MM-DDTHH:mm:ss.SSS') : value;
   })
   @IsDateString()
   dueAt?: string;
