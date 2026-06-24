@@ -48,7 +48,7 @@ export class TodosService {
     if (doc.dueAt) {
       const localMoment = moment.tz(doc.dueAt, timezone);
       formatted = localMoment.format('DD.MM.YYYY, HH:mm');
-      iso = localMoment.format('YYYY-MM-DDTHH:mm'); // Input uchun eng xavfsiz format
+      iso = localMoment.format('YYYY-MM-DD HH:mm');; // Input uchun eng xavfsiz format
     }
 
     // 3. Obyektni qat'iy qaytarish (Hech qanday "shadow" maydonlarsiz)
