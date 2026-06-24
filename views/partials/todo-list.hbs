@@ -1,5 +1,6 @@
 {{#if todos.length}}
   {{#each todos}}
+    {{!-- Bu yerda 'this' ichida dueAtFormatted va dueAt tayyor bo'lishi shart --}}
     {{> todo-item this}}
   {{/each}}
 {{else}}

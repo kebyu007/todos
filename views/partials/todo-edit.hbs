@@ -3,18 +3,12 @@
     <input class="input" type="text" name="title" value="{{title}}" required placeholder="Task title" />
     <input class="input" type="text" name="description" value="{{description}}" placeholder="Description" />
     
-    <input class="input" type="datetime-local" id="dueAtInput" name="dueAt" value="{{dueAt}}" />
-
-<script>
-  // Brauzer vaqtni surib yubormasligi uchun yuklanganda qiymatni qayta o'rnatamiz
-  document.addEventListener('DOMContentLoaded', () => {
-    const input = document.getElementById('dueAtInput');
-    // Agar serverdan kelgan qiymatda 'Z' bo'lmasa, uni o'z holicha qoldiramiz
-    if(input.value.includes('Z')) {
-       input.value = input.value.replace('Z', '');
-    }
-  });
-</script>
+    <input class="input" 
+           type="datetime-local" 
+           name="dueAt" 
+           value="{{dueAt}}" 
+           step="1" 
+           aria-label="Due date" />
       
     {{> priority-select id=id selected=priority}}
     <div class="todo-edit__actions">
