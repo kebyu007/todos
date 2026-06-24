@@ -36,34 +36,35 @@ export class TodosService {
 
   // Helper: Mongoose hujjatini HBS va HTMX uchun tayyorlab beradi
   private formatTodoWithTimezone(todo: any, timezone: string): any {
-    if (!todo) return null;
+  if (!todo) return null;
+  const doc = todo.toObject ? todo.toObject() : todo;
 
-    // 1. Obyektni toza JS obyektiga aylantirish
-    const doc = todo.toObject ? todo.toObject() : todo;
+  let formatted = '';
+  let iso: null | string = null;
 
-    // 2. Sana formatlarini aniq hisoblash
-    let formatted = '';
-    let iso: null | string = null;
-
-    if (doc.dueAt) {
-      const localMoment = moment.tz(doc.dueAt, timezone);
-      formatted = localMoment.format('DD.MM.YYYY, HH:mm');
-      iso = localMoment.format('YYYY-MM-DD HH:mm');; // Input uchun eng xavfsiz format
-    }
-
-    // 3. Obyektni qat'iy qaytarish (Hech qanday "shadow" maydonlarsiz)
-    return {
-      id: doc._id ? doc._id.toString() : doc.id,
-      title: doc.title,
-      description: doc.description,
-      priority: doc.priority,
-      status: doc.status,
-      tags: doc.tags,
-      isDone: doc.status === 'done',
-      dueAtFormatted: formatted, // <-- Dashboard uchun
-      dueAt: iso, // <-- Edit uchun
-    };
+  if (doc.dueAt) {
+    // 1. Vaqtni foydalanuvchining zonasiga o'tkazamiz
+    const localMoment = moment.tz(doc.dueAt, timezone);
+    formatted = localMoment.format('DD.MM.YYYY, HH:mm');
+    
+    // 2. MUHIM: "Z" belgisini olib tashlaymiz
+    // ISO formatida "T" belgisi bor, lekin oxirida "Z" bo'lmasligi kerak
+    // Chunki "Z" brauzerga "bu UTC" deb jar soladi
+    iso = localMoment.format('YYYY-MM-DDTHH:mm'); 
   }
+
+  return {
+    id: doc._id ? doc._id.toString() : doc.id,
+    title: doc.title,
+    description: doc.description,
+    priority: doc.priority,
+    status: doc.status,
+    tags: doc.tags,
+    isDone: doc.status === 'done',
+    dueAtFormatted: formatted,
+    dueAt: iso, // Bu "2026-06-24T21:10" bo'lib boradi, "Z" siz!
+  };
+}
 
   // 1. Yangi To'do yaratish (HTMX daxshbord ro'yxatiga darhol qo'shilishi uchun formatlangan)
   async create(dto: CreateTodoDto, ownerId: string): Promise<any> {
