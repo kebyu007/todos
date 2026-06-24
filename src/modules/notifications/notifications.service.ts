@@ -26,8 +26,9 @@ export class NotificationsService {
     if (!this.telegram.isEnabled()) return;
 
     // OXIRIGA .getTime() QO'SHILDI:
+    // OXIRIGA .getTime() QO'SHILDI:
     const now = new Date(
-      moment.tz('Asia/Tashkent').format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
+      moment.tz('Asia/Tashkent').format('YYYY-MM-DDTHH:mm:ss.SSS') + 'Z',
     ).getTime();
     const todos = await this.todosService.findDueReminderTodos();
     if (todos.length === 0) return;

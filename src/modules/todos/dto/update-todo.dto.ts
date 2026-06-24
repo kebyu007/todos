@@ -35,14 +35,14 @@ export class UpdateTodoDto {
   @IsOptional()
   @Transform(({ value }) => {
     if (!value || value === '') return undefined;
-    
+
     // AWS yoki istalgan muhitda vaqtni o'zgartirmasdan "kiritilganidek" UTC qilib saqlaymiz
     const parsed = moment.utc(
       value,
       ['YYYY-MM-DDTHH:mm', 'DD.MM.YYYY, HH:mm', 'DD.MM.YYYY HH:mm'],
       true,
     );
-    
+
     return parsed.isValid() ? parsed.format('YYYY-MM-DDTHH:mm:ss.SSSZ') : value;
   })
   @IsDateString()
