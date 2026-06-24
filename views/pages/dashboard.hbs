@@ -15,12 +15,11 @@
 </form>
 
 <div class="toolbar">
-  <div class="filters" x-data="{ active: '{{filter}}' }">
+  <div class="filters">
     {{#each filters}}
-      <a class="chip" :class="{ 'chip--active': active === '{{this}}' }"
+      <a class="chip {{#if (eq this ../filter)}}chip--active{{/if}}"
          hx-get="/todos?filter={{this}}" hx-target="#todo-list" hx-swap="innerHTML"
-         href="/?filter={{this}}"
-         @click="active = '{{this}}'">{{this}}</a>
+         href="/?filter={{this}}">{{this}}</a>
     {{/each}}
   </div>
   <input class="input input--search input--pill" type="search" name="search" placeholder="Search…"

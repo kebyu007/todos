@@ -15,34 +15,11 @@
           <td>{{this.email}}</td>
           <td>
             <form method="post" action="/admin/users/{{this.id}}" class="inline-form">
-              <div 
-                class="custom-dropdown" 
-                x-data="{ open: false, selectedRole: '{{role}}' }" 
-                :class="{ 'custom-dropdown--open': open }" 
-                @click.away="open = false"
-              >
-                <input type="hidden" name="role" :value="selectedRole" value="{{role}}">
-
-                <button type="button" class="custom-dropdown__trigger" @click="open = !open">
-                  <span x-text="selectedRole">{{role}}</span>
-                  <svg class="custom-dropdown__arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                  </svg>
-                </button>
-
-                <ul class="custom-dropdown__menu" x-show="open" x-cloak>
-                  {{#each ../roles}}
-                    <li 
-                      class="custom-dropdown__option" 
-                      :class="{ 'custom-dropdown__option--selected': selectedRole === '{{this}}' }"
-                      @click="selectedRole = '{{this}}'; open = false"
-                    >
-                      {{this}}
-                    </li>
-                  {{/each}}
-                </ul>
-              </div>
-
+              <select name="role" class="input input--sm">
+                {{#each ../roles}}
+                  <option value="{{this}}" {{#if (eq this ../role)}}selected{{/if}}>{{this}}</option>
+                {{/each}}
+              </select>
               <button type="submit" class="btn btn--ghost btn--sm">Save</button>
             </form>
           </td>

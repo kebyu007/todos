@@ -16,7 +16,6 @@ async function bootstrap() {
   // HBS + HTMX/Alpine over a CDN need a relaxed CSP, so disable the strict default.
   app.use(helmet({ contentSecurityPolicy: false }));
   app.use(cookieParser());
-  app.enableShutdownHooks();
 
   // ---- Global validation ----
   app.useGlobalPipes(

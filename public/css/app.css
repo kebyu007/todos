@@ -89,6 +89,7 @@
 [x-cloak] { display: none !important; }
 
 html { -webkit-text-size-adjust: 100%; }
+/* native widgets (date popup, select list, spinners) follow the theme */
 [data-theme="light"] { color-scheme: light; }
 [data-theme="dark"] { color-scheme: dark; }
 body {
@@ -103,6 +104,7 @@ body {
   text-rendering: optimizeLegibility;
   transition: background 0.5s var(--ease), color 0.3s var(--ease);
 }
+/* two soft drifting color blobs behind everything */
 body::before, body::after {
   content: "";
   position: fixed;
@@ -151,6 +153,7 @@ small { color: var(--muted); }
 .page-head h1 { margin-bottom: 2px; }
 .page-head .muted { font-size: 0.96rem; }
 
+/* glass mixin */
 .glass {
   background: var(--glass);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
@@ -199,9 +202,11 @@ small { color: var(--muted); }
 .icon-btn--danger { color: var(--error); }
 .icon-btn--danger:hover { background: color-mix(in srgb, var(--error) 14%, transparent); }
 
+/* nav/menu icon spacing */
 .navlink i, .usermenu__item i { width: 16px; text-align: center; opacity: 0.85; }
 .btn i { font-size: 0.92em; }
 
+/* user menu */
 .usermenu { position: relative; }
 .usermenu__trigger {
   display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
@@ -251,31 +256,6 @@ small { color: var(--muted); }
 .btn--primary:hover { filter: brightness(1.05) saturate(1.05); box-shadow: var(--brand-glow), var(--shadow); }
 .btn--ghost { background: var(--glass-2); border-color: var(--border); color: var(--text-soft); }
 .btn--ghost:hover { background: var(--glass-strong); color: var(--text); }
-
-.btn.btn--ghost.btn--sm {
-  padding: 8px 14px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  background: var(--glass-2);
-  border: 1px solid var(--glass-brd);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  border-radius: var(--r-sm);
-  color: var(--text-soft);
-  cursor: pointer;
-  transition: transform 0.2s var(--spring), background 0.2s var(--ease), border-color 0.2s var(--ease), color 0.2s;
-}
-.btn.btn--ghost.btn--sm:hover {
-  background: var(--glass-strong);
-  border-color: var(--brand-500);
-  color: var(--text);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-.btn.btn--ghost.btn--sm:active {
-  transform: translateY(0) scale(0.97);
-}
-
 .btn--danger { background: var(--glass-2); border-color: var(--border); color: var(--error); }
 .btn--danger:hover { background: color-mix(in srgb, var(--error) 14%, transparent); }
 .btn--google { width: 100%; background: var(--glass-strong); color: var(--text); border: 1px solid var(--border-strong); gap: 10px; }
@@ -298,137 +278,20 @@ small { color: var(--muted); }
 .input--sm { padding: 8px 11px; font-size: 0.85rem; width: auto; }
 .input--search { width: 100%; }
 
+/* compact rounded "pill" control (composer meta, inline edit) */
 .input--pill { width: auto; border-radius: var(--r-full); padding: 9px 14px; font-size: 0.88rem; }
 
+/* custom select — drop the native arrow, draw our own chevron */
 select.input {
   appearance: none; -webkit-appearance: none; cursor: pointer;
   padding-right: 38px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238b90a4' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 12px center; background-size: 15px;
 }
-
-select.input.input--sm {
-  padding: 8px 32px 8px 12px;
-  font-size: 0.85rem;
-  width: auto;
-  background-color: var(--glass-2);
-  border: 1px solid var(--glass-brd);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  border-radius: var(--r-sm);
-  color: var(--text);
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238b90a4' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 12px;
-  cursor: pointer;
-  transition: background 0.2s var(--ease), border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
-}
-
-select.input.input--sm:focus {
-  background-color: var(--glass-strong);
-  border-color: var(--brand-500);
-  box-shadow: var(--ring);
-  outline: none;
-}
-
 select.input--pill { padding-right: 32px; background-position: right 10px center; }
+select.input option { background: var(--glass-strong); color: var(--text); }
 
-/* Ochiq ro'yxat elementlari tizim foniga mos va o'qishga qulay bo'lishi uchun tuzatildi */
-select.input option {
-  background-color: var(--bg);
-  color: var(--text);
-  font-family: inherit;
-  font-size: 0.9rem;
-  padding: 10px;
-}
-
-/* Custom Dropdown Container */
-.custom-dropdown {
-  position: relative;
-  display: inline-block;
-  min-width: 110px;
-}
-
-/* The Clickable Element (Looks exactly like your input--sm) */
-.custom-dropdown__trigger {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 8px 12px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: var(--glass-2);
-  border: 1px solid var(--glass-brd);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  border-radius: var(--r-sm);
-  color: var(--text);
-  cursor: pointer;
-  transition: background 0.2s var(--ease), border-color 0.2s var(--ease);
-}
-
-.custom-dropdown__trigger:focus {
-  background-color: var(--glass-strong);
-  border-color: var(--brand-500);
-  outline: none;
-  box-shadow: var(--ring);
-}
-
-.custom-dropdown__arrow {
-  color: var(--muted);
-  transition: transform 0.2s var(--ease);
-}
-
-.custom-dropdown--open .custom-dropdown__arrow {
-  transform: rotate(180deg);
-}
-
-/* The Beautiful Popup Menu Options Panel */
-.custom-dropdown__menu {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  right: 0;
-  z-index: 100;
-  padding: 5px;
-  margin: 0;
-  list-style: none;
-  background: var(--glass-strong);
-  border: 1px solid var(--glass-brd);
-  -webkit-backdrop-filter: saturate(180%) blur(22px);
-  backdrop-filter: saturate(180%) blur(22px);
-  border-radius: var(--r-sm);
-  box-shadow: var(--shadow-lg);
-  animation: popIn 0.2s var(--ease) both;
-}
-
-/* Individual Option Items */
-.custom-dropdown__option {
-  padding: 8px 12px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text-soft);
-  border-radius: calc(var(--r-sm) - 4px);
-  cursor: pointer;
-  transition: background 0.15s var(--ease), color 0.15s var(--ease);
-}
-
-.custom-dropdown__option:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text);
-}
-
-/* Selected Active Option Style */
-.custom-dropdown__option--selected {
-  background: var(--brand-500) !important;
-  color: #ffffff !important;
-}
-
+/* native date / time — themed, with a tidy clickable calendar icon */
 input[type="date"].input, input[type="datetime-local"].input, input[type="time"].input { cursor: pointer; }
 input[type="datetime-local"].input::-webkit-datetime-edit,
 input[type="date"].input::-webkit-datetime-edit { color: var(--text); }
@@ -448,6 +311,7 @@ input[type="date"].input::-webkit-calendar-picker-indicator:hover {
 .divider { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 0.8rem; margin: 2px 0; }
 .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
 
+/* iOS-style toggle switch */
 .switch { position: relative; display: inline-block; width: 50px; height: 30px; flex: none; }
 .switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
 .switch__track {
@@ -462,6 +326,7 @@ input[type="date"].input::-webkit-calendar-picker-indicator:hover {
 .switch input:checked + .switch__track { background: var(--success); }
 .switch input:checked + .switch__track::after { transform: translateX(20px); }
 
+/* segmented control (priority picker) — iOS/One-UI style */
 .segmented {
   display: inline-flex; padding: 3px; gap: 2px; vertical-align: middle;
   background: var(--glass-2); border: 1px solid var(--border); border-radius: var(--r-full);
@@ -489,6 +354,7 @@ input[type="date"].input::-webkit-calendar-picker-indicator:hover {
   .segmented__opt i { font-size: 0.85rem; }
 }
 
+/* themed flatpickr calendar (glass, follows light/dark tokens) */
 .flatpickr-calendar {
   background: var(--glass-strong); color: var(--text);
   -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%);
@@ -529,6 +395,7 @@ span.flatpickr-weekday { color: var(--muted); font-weight: 600; }
 .card__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .card__head h2 { margin: 0; }
 
+/* auth screen */
 .auth { max-width: 410px; margin: 7vh auto; }
 .auth__brand { text-align: center; margin-bottom: 20px; }
 .auth__brand .brand__mark { width: 50px; height: 50px; font-size: 1.4rem; margin: 0 auto 14px; border-radius: 15px; }
@@ -542,6 +409,7 @@ span.flatpickr-weekday { color: var(--muted); font-weight: 600; }
 .todo-create { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; padding: 16px; margin-bottom: 18px; }
 .todo-create .input { flex: 1 1 200px; width: auto; }
 
+/* modern composer: big borderless title + a row of pill controls */
 .composer { padding: 15px 17px 14px; margin-bottom: 18px; }
 .composer__title {
   width: 100%; border: none; background: transparent; color: var(--text);
@@ -554,6 +422,7 @@ span.flatpickr-weekday { color: var(--muted); font-weight: 600; }
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
   padding-top: 12px; border-top: 1px solid var(--border);
 }
+/* keep date + priority compact, let tags grow, push Add to the right edge */
 .composer__meta .input.input--pill { width: auto; flex: 0 0 auto; }
 .composer__meta .composer__tags { flex: 1 1 140px; min-width: 120px; }
 .composer__meta .composer__add { margin-left: auto; flex: 0 0 auto; }
@@ -563,6 +432,7 @@ span.flatpickr-weekday { color: var(--muted); font-weight: 600; }
 }
 
 .toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+/* iOS segmented control */
 .filters {
   display: inline-flex; gap: 2px; padding: 4px;
   background: var(--glass-2); border: 1px solid var(--border); border-radius: var(--r-full);
@@ -602,6 +472,7 @@ span.flatpickr-weekday { color: var(--muted); font-weight: 600; }
 .todo--empty::before { display: none; }
 .todo--empty__icon { font-size: 2rem; opacity: 0.45; }
 
+/* custom circular checkbox */
 .todo__toggle { margin: 1px 0 0; display: grid; }
 .todo__toggle input {
   appearance: none; -webkit-appearance: none; margin: 0; cursor: pointer;
@@ -705,6 +576,7 @@ span.flatpickr-weekday { color: var(--muted); font-weight: 600; }
   .todo-create .input { flex-basis: 100%; }
 }
 
+/* respect reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
