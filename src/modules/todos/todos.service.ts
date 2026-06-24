@@ -55,7 +55,7 @@ export class TodosService {
   }
 
   // Dashboard ro'yxatida vaqt zonasini applyFilters'ga uzatamiz
-  async findForUser(ownerId: string, query: QueryTodosDto): Promise<TodoDocument[]> {
+  async findForUser(ownerId: string, query: QueryTodosDto): Promise<any[]> {
     const user = await this.userModel.findById(ownerId).exec();
     const timezone = user?.timezone || 'Asia/Tashkent';
 
@@ -63,12 +63,21 @@ export class TodosService {
       userId: new Types.ObjectId(ownerId),
     };
     
-    this.applyFilters(filter, query, timezone); // Timezone uzatildi
+    this.applyFilters(filter, query, timezone);
     
-    return this.todoModel
+    const todos = await this.todoModel
       .find(filter)
       .sort({ status: 1, dueAt: 1, createdAt: -1 })
       .exec();
+
+    return todos.map((todo) => {
+      const todoObj = todo.toObject() as any;
+      if (todoObj.dueAt) {
+        // TO'G'RILANDI: moment() o'rniga to'g'ridan-to'g'ri moment.tz() chaqirildi
+        todoObj.dueAt = moment.tz(todoObj.dueAt, timezone).format();
+      }
+      return todoObj;
+    });
   }
 
   findAll(query: QueryTodosDto): Promise<TodoDocument[]> {

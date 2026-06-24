@@ -71,22 +71,27 @@ export class NotificationsService {
           owner.notificationsEnabled &&
           fireAt >= now - STALE_WINDOW;
 
+        // ... (Tepadagi kodlar o'zgarishsiz qoladi)
+
         if (deliverable) {
           try {
+            // Foydalanuvchining shaxsiy timezone'ini aniqlaymiz
+            const timezone = owner?.timezone || 'Asia/Tashkent';
+
             await this.telegram.sendReminder(
               owner!.telegramChatId!,
               todo,
               reminder.offsetMinutes,
+              timezone, // To'rtinchi argument qilib uzatdik!
             );
           } catch (err) {
             this.logger.error(
               `Failed to send reminder for todo ${todo._id}`,
               err as Error,
             );
-            continue; // leave un-sent; retry next minute
+            continue;
           }
         }
-        // Mark sent either way (delivered, or stale/skipped) so we don't loop.
         reminder.sent = true;
         reminder.sentAt = new Date();
         changed = true;

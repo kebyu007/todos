@@ -5,7 +5,6 @@ import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { UserModule } from './modules/user/user.module';
 import { TodosModule } from './modules/todos/todos.module';
-import { ReminderLogModule } from './modules/reminder-log/reminder-log.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { TelegramModule } from './modules/telegram/telegram.module';
@@ -26,7 +25,6 @@ import { FlashMiddleware } from './common/middleware/flash.middleware';
     MongooseModule.forRoot(process.env.MONGO_URL as string),
     UserModule,
     TodosModule,
-    ReminderLogModule,
     AuthModule,
     AdminModule,
     TelegramModule,
