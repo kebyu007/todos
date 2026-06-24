@@ -33,7 +33,7 @@ export class User {
   hashedRefreshToken: string | null;
 
   // IANA timezone, e.g. "Asia/Tashkent" — critical for correct reminders
-  @Prop({ default: 'UTC' })
+  @Prop({ default: 'Asia/Tashkent' })
   timezone: string;
 
   // Telegram linkage (phase 2)
