@@ -8,10 +8,12 @@ import {
   MinLength,
 } from 'class-validator';
 import { Priority, TodoStatus } from '../entities/todo.entity';
+import * as moment from 'moment-timezone'; // Namespace import saqlanadi
 
 // Splits a comma-separated form field ("work, home") into a string[].
 const toStringArray = ({ value }: { value: unknown }): string[] => {
-  if (Array.isArray(value)) return value.map((v) => String(v).trim()).filter(Boolean);
+  if (Array.isArray(value))
+    return value.map((v) => String(v).trim()).filter(Boolean);
   if (typeof value === 'string') {
     return value
       .split(',')
@@ -30,9 +32,20 @@ export class CreateTodoDto {
   @IsString()
   description?: string;
 
-  // Empty form fields arrive as '' — coerce those to undefined.
+  // Bo'sh form maydonlarini tozalash va xavfsiz ISO formatga o'girish
   @IsOptional()
-  @Transform(({ value }) => (value === '' ? undefined : value))
+  @Transform(({ value }) => {
+    if (!value || value === '') return undefined;
+    
+    // AWS yoki istalgan muhitda vaqtni o'zgartirmasdan "kiritilganidek" UTC qilib saqlaymiz
+    const parsed = moment.utc(
+      value,
+      ['YYYY-MM-DDTHH:mm', 'DD.MM.YYYY, HH:mm', 'DD.MM.YYYY HH:mm'],
+      true,
+    );
+    
+    return parsed.isValid() ? parsed.format('YYYY-MM-DDTHH:mm:ss.SSSZ') : value;
+  })
   @IsDateString()
   dueAt?: string;
 

@@ -7,7 +7,15 @@
   <div class="todo__body">
     <span class="todo__title">{{title}}</span>
     <span class="badge badge--{{priority}}">{{priority}}</span>
-    {{#if dueAt}}<time class="todo__due"><i class="fa-regular fa-calendar"></i> {{formatDate dueAt}}</time>{{/if}}
+    
+    {{!-- MANA SHU SHARTNI dueAtFormatted QILIB O'ZGARTIRDIK --}}
+    {{!-- todo-item.hbs --}}
+{{#if dueAtFormatted}}
+  <time class="todo__due">
+    <i class="fa-regular fa-calendar"></i> {{dueAtFormatted}}
+  </time>
+{{/if}}
+
     {{#if description}}<p class="todo__desc">{{description}}</p>{{/if}}
     {{#if tags.length}}
       <span class="todo__tags">

@@ -11,6 +11,7 @@ import { TodosService } from '../todos/todos.service';
 import { TodoDocument, TodoStatus } from '../todos/entities/todo.entity';
 import { UserDocument } from '../user/entities/user.entity';
 import type { AuthUser } from '../../common/types/auth-user';
+import * as moment from 'moment-timezone';
 
 @Injectable()
 export class TelegramService implements OnModuleInit, OnModuleDestroy {
@@ -46,29 +47,33 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
   }
 
   // ---- TAROXIY O'ZGARISH: timezone parametri qo'shildi ----
+
   async sendReminder(
     chatId: string,
     todo: TodoDocument,
     offsetMinutes: number,
-    timezone: string = 'Asia/Tashkent', 
+    timezone: string = 'Asia/Tashkent',
   ): Promise<void> {
     if (!this.bot) return;
+
+    // Timezone mavjudligini va bo'sh emasligini tekshiramiz
+    const activeZone =
+      timezone && timezone.trim() ? timezone.trim() : 'Asia/Tashkent';
+
     const when = todo.dueAt
-      ? new Date(todo.dueAt).toLocaleString('en-GB', {
-          day: '2-digit',
-          month: 'short',
-          hour: '2-digit',
-          minute: '2-digit',
-          timeZone: timezone, // Vaqt zonasi majburiy yuklandi
-        })
+      ? moment.utc(todo.dueAt).format('DD MMM, HH:mm') // <-- To'g'rilandi
       : '';
+
     const head =
       offsetMinutes >= 60
         ? `⏰ Due in 1 hour`
         : offsetMinutes > 0
           ? `⏰ Due in ${offsetMinutes} min`
           : `🔔 Due now`;
-    const text = `${head}\n*${this.escape(todo.title)}*\n🗓 ${when}`;
+
+    // Diagnostika uchun [Z: ${activeZone}] qo'shildi
+    const text = `${head}\n*${this.escape(todo.title)}*\n🗓 ${when} `;
+
     await this.bot.telegram.sendMessage(chatId, text, {
       parse_mode: 'Markdown',
       ...this.todoButtons(todo),
@@ -116,7 +121,9 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     if (token) {
       const user = await this.userService.findByTelegramLinkToken(token);
       if (!user) {
-        await ctx.reply('⚠️ This link is invalid or expired. Generate a new one from your Profile.');
+        await ctx.reply(
+          '⚠️ This link is invalid or expired. Generate a new one from your Profile.',
+        );
         return;
       }
       await this.userService.linkTelegram(user._id.toString(), chatId);
@@ -128,11 +135,16 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
 
     const existing = await this.userService.findByTelegramChatId(chatId);
     if (existing) {
-      await ctx.reply(`👋 Welcome back, ${existing.username}! Send a message to add a task, or /list.`);
+      await ctx.reply(
+        `👋 Welcome back, ${existing.username}! Send a message to add a task, or /list.`,
+      );
     } else {
-      await ctx.reply('👋 Open the app → *Profile* → *Connect Telegram* to link your account.', {
-        parse_mode: 'Markdown',
-      });
+      await ctx.reply(
+        '👋 Open the app → *Profile* → *Connect Telegram* to link your account.',
+        {
+          parse_mode: 'Markdown',
+        },
+      );
     }
   }
 
@@ -145,10 +157,11 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       await ctx.reply('🎉 No open tasks. Send a message to add one.');
       return;
     }
-    
+
     const timezone = user.timezone || 'Asia/Tashkent'; // User timezone olindi
     for (const todo of open.slice(0, 20)) {
-      await ctx.reply(this.todoLine(todo, timezone), { // uzatildi
+      await ctx.reply(this.todoLine(todo, timezone), {
+        // uzatildi
         parse_mode: 'Markdown',
         ...this.todoButtons(todo),
       });
@@ -159,7 +172,9 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     const user = await this.requireUser(ctx);
     if (!user) return;
     if (!title) {
-      await ctx.reply('Please include a title, e.g. `Buy milk`', { parse_mode: 'Markdown' });
+      await ctx.reply('Please include a title, e.g. `Buy milk`', {
+        parse_mode: 'Markdown',
+      });
       return;
     }
     const todo = await this.todosService.create({ title }, user._id.toString());
@@ -177,9 +192,10 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       const todo = await this.todosService.toggle(id, this.actor(user));
       const done = todo.status === TodoStatus.DONE;
       await ctx.answerCbQuery(done ? '✅ Completed' : '↩️ Reopened');
-      
+
       const timezone = user.timezone || 'Asia/Tashkent';
-      await ctx.editMessageText(this.todoLine(todo, timezone), { // uzatildi
+      await ctx.editMessageText(this.todoLine(todo, timezone), {
+        // uzatildi
         parse_mode: 'Markdown',
         ...this.todoButtons(todo),
       });
@@ -207,7 +223,9 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       ? await this.userService.findByTelegramChatId(chatId)
       : null;
     if (!user) {
-      await ctx.reply('🔗 Link your account first: app → Profile → Connect Telegram.');
+      await ctx.reply(
+        '🔗 Link your account first: app → Profile → Connect Telegram.',
+      );
     }
     return user;
   }
@@ -221,8 +239,31 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     };
   }
 
-  private todoButtons(todo: TodoDocument) {
-    const id = todo._id.toString();
+  // TelegramService ichida
+
+  // ---- O'ZGARISH: todoLine ichida ham local vaqt ko'rsatiladi ----
+  private todoLine(
+    todo: TodoDocument,
+    timezone: string = 'Asia/Tashkent',
+  ): string {
+    const mark = todo.status === TodoStatus.DONE ? '✅' : '⬜️';
+
+    // Xavfsiz zona tekshiruvi
+    const activeZone =
+      timezone && timezone.trim() ? timezone.trim() : 'Asia/Tashkent';
+
+    const due = todo.dueAt
+      ? ` · 🗓 ${moment.utc(todo.dueAt).format('DD MMM, HH:mm')}` // <-- To'g'rilandi
+      : '';
+
+    // Diagnostika uchun oxiriga zona nomi qo'shildi
+    return `${mark} *${this.escape(todo.title)}*${due} `;
+  }
+
+  // TelegramService klassining eng oxiriga, } yopilishidan tepaga qo'ying:
+  private todoButtons(todo: any) {
+    const id =
+      (todo._id ? todo._id.toString() : todo.id?.toString()) || 'unknown';
     const done = todo.status === TodoStatus.DONE;
     return Markup.inlineKeyboard([
       [
@@ -232,22 +273,9 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     ]);
   }
 
-  // ---- O'ZGARISH: todoLine ichida ham local vaqt ko'rsatiladi ----
-  private todoLine(todo: TodoDocument, timezone: string = 'Asia/Tashkent'): string {
-    const mark = todo.status === TodoStatus.DONE ? '✅' : '⬜️';
-    const due = todo.dueAt
-      ? ` · 🗓 ${new Date(todo.dueAt).toLocaleString('en-GB', {
-          day: '2-digit',
-          month: 'short',
-          hour: '2-digit',
-          minute: '2-digit',
-          timeZone: timezone,
-        })}`
-      : '';
-    return `${mark} *${this.escape(todo.title)}*${due}`;
-  }
-
   private escape(s: string): string {
+    // <-- JAYRONI JOYIGA QAYTDI
+    if (!s) return '';
     return s.replace(/([_*`\[])/g, '\\$1');
   }
-}
+} // Class shu yerda yopiladi

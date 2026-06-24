@@ -2,8 +2,9 @@
   <form class="todo-edit" hx-patch="/todos/{{id}}">
     <input class="input" type="text" name="title" value="{{title}}" required placeholder="Task title" />
     <input class="input" type="text" name="description" value="{{description}}" placeholder="Description" />
-    <input class="input input--pill" type="text" name="dueAt" data-date placeholder="Set due date"
-      data-default="{{inputDate dueAt}}" aria-label="Due date" />
+    
+    <input class="input" type="datetime-local" name="dueAt" value="{{dueAt}}" aria-label="Due date" />
+      
     {{> priority-select id=id selected=priority}}
     <div class="todo-edit__actions">
       <button type="submit" class="btn btn--primary btn--sm"><i class="fa-solid fa-check"></i> Save</button>

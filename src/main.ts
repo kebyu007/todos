@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import { readdirSync, readFileSync } from 'fs';
@@ -38,6 +38,28 @@ async function bootstrap() {
 
   // ---- Static assets ----
   app.useStaticAssets(join(__dirname, '..', 'public'), { prefix: '/public/' });
+
+  const logger = new Logger('GlobalErrorHook');
+
+  // 1. Unhandled Rejection — catch qilinmagan asinxron xatolar (masalan, Telegram API timeout bo'lsa)
+  process.on('unhandledRejection', (reason, promise) => {
+    logger.error('💥 UNHANDLED REJECTION: Asinxron xatolik ushlandi!');
+    logger.error(`Sababi (Reason): ${reason}`);
+    if (reason instanceof Error) {
+      logger.error(reason.stack);
+    }
+  });
+
+  // 2. Uncaught Exception — kod ichidagi kutilmagan sinxron xatolar (masalan, mavjud bo'lmagan o'zgaruvchini chaqirish)
+  process.on('uncaughtException', (err) => {
+    logger.error('💥 UNCAUGHT EXCEPTION: Kutilmagan kritik xatolik!');
+    logger.error(`Xabar: ${err.message}`);
+    logger.error(err.stack);
+
+    // Muhim: Kritik xatolikda server xotirasi (RAM) buzilmasligi uchun jarayonni to'xtatib,
+    // PM2 yoki Docker uni qayta o'zi yoqib olishiga qo'yib bergan ma'qul.
+    process.exit(1);
+  });
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);

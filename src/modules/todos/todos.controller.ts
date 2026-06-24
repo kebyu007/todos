@@ -15,7 +15,7 @@ import { TodosService } from './todos.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
 import { QueryTodosDto, TodoFilter } from './dto/query-todos.dto';
-import { TodoDocument, TodoStatus } from './entities/todo.entity';
+import { TodoStatus } from './entities/todo.entity';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { AuthUser } from '../../common/types/auth-user';
 
@@ -23,26 +23,28 @@ import type { AuthUser } from '../../common/types/auth-user';
 export class TodosController {
   constructor(private readonly todosService: TodosService) {}
 
-  // Dashboard — full page.
+  // Dashboard — to'liq sahifa
   @Get()
   async dashboard(
     @CurrentUser() user: AuthUser,
     @Query() query: QueryTodosDto,
     @Res() res: Response,
   ): Promise<void> {
+    // Servis allaqachon timezone bo'yicha formatlab beradi (dueAtFormatted va dueAt bilan)
     const todos = await this.todosService.findForUser(user.userId, query);
+
     res.render('pages/dashboard', {
       layout: 'layouts/main',
       title: 'My Tasks',
       currentUser: user,
-      todos: todos.map((t) => this.toView(t)),
+      todos: todos, // toView() olib tashlandi, to'g'ridan-to'g'ri uzatiladi
       filter: query.filter ?? TodoFilter.ALL,
       search: query.search ?? '',
       filters: Object.values(TodoFilter),
     });
   }
 
-  // HTMX list refresh (filter tabs / search) — returns just the list partial.
+  // HTMX ro'yxatni yangilash (filtrlar va qidiruv uchun)
   @Get('todos')
   async list(
     @CurrentUser() user: AuthUser,
@@ -52,10 +54,11 @@ export class TodosController {
     const todos = await this.todosService.findForUser(user.userId, query);
     res.render('partials/todo-list', {
       layout: false,
-      todos: todos.map((t) => this.toView(t)),
+      todos: todos, // To'g'ridan-to'g'ri uzatiladi
     });
   }
 
+  // Yangi Todo yaratish
   @Post('todos')
   async create(
     @CurrentUser() user: AuthUser,
@@ -68,13 +71,13 @@ export class TodosController {
       this.triggerToast(res, 'success', 'Task added');
       return res.render('partials/todo-item', {
         layout: false,
-        ...this.toView(todo),
+        ...todo, // Formatlangan obyektni yoyib (spread) yuboramiz
       });
     }
     res.redirect('/');
   }
 
-  // Single-item view (used to cancel inline edits — swaps the form back).
+  // Bitta Todo-ni olish (Cancel bosilganda inline formani qayta tiklaydi)
   @Get('todos/:id')
   async one(
     @CurrentUser() user: AuthUser,
@@ -82,10 +85,14 @@ export class TodosController {
     @Res() res: Response,
   ): Promise<void> {
     const todo = await this.todosService.findOneScoped(id, user);
-    res.render('partials/todo-item', { layout: false, ...this.toView(todo) });
+    res.render('partials/todo-item', {
+      layout: false,
+      ...todo,
+    });
   }
 
-  // Inline edit form (HTMX swaps the row for this form).
+  // Inline tahrirlash formasi (HTMX qatorni ushbu formaga almashtiradi)
+  // todos.controller.ts ichidagi editForm metodini shunday o'zgartiring:
   @Get('todos/:id/edit')
   async editForm(
     @CurrentUser() user: AuthUser,
@@ -93,12 +100,17 @@ export class TodosController {
     @Res() res: Response,
   ): Promise<void> {
     const todo = await this.todosService.findOneScoped(id, user);
+
+    // Agar todo Mongoose hujjati bo'lsa, uni toza JS obyektiga o'giramiz
+    const todoPlain = todo.toObject ? todo.toObject() : todo;
+
     res.render('partials/todo-edit', {
       layout: false,
-      ...this.toView(todo),
+      ...todoPlain, // Endi title, description va dueAt aniq Handlebars'ga o'tadi!
     });
   }
 
+  // Todo-ni yangilash (Save bosilganda)
   @Patch('todos/:id')
   async update(
     @CurrentUser() user: AuthUser,
@@ -111,12 +123,13 @@ export class TodosController {
     if (this.isHtmx(req)) {
       return res.render('partials/todo-item', {
         layout: false,
-        ...this.toView(todo),
+        ...todo,
       });
     }
     res.redirect('/');
   }
 
+  // Checkbox bosilganda (Status toggle)
   @Post('todos/:id/toggle')
   async toggle(
     @CurrentUser() user: AuthUser,
@@ -124,9 +137,13 @@ export class TodosController {
     @Res() res: Response,
   ): Promise<void> {
     const todo = await this.todosService.toggle(id, user);
-    res.render('partials/todo-item', { layout: false, ...this.toView(todo) });
+    res.render('partials/todo-item', {
+      layout: false,
+      ...todo,
+    });
   }
 
+  // Todo-ni o'chirish
   @Delete('todos/:id')
   async remove(
     @CurrentUser() user: AuthUser,
@@ -134,32 +151,17 @@ export class TodosController {
     @Res() res: Response,
   ): Promise<void> {
     await this.todosService.remove(id, user);
-    // Empty body → HTMX removes the swapped element.
     this.triggerToast(res, 'info', 'Task deleted');
     res.send('');
   }
 
-  // Fires a client-side toast via HTMX's HX-Trigger header (success responses).
+  // HTMX orqali notification chiqarish uchun trigger header
   private triggerToast(
     res: Response,
     type: 'success' | 'error' | 'info',
     message: string,
   ): void {
     res.setHeader('HX-Trigger', JSON.stringify({ toast: { type, message } }));
-  }
-
-  // Maps a Mongo document to the flat shape the HBS partials expect.
-  private toView(todo: TodoDocument) {
-    return {
-      id: todo._id.toString(),
-      title: todo.title,
-      description: todo.description,
-      priority: todo.priority,
-      status: todo.status,
-      isDone: todo.status === TodoStatus.DONE,
-      dueAt: todo.dueAt,
-      tags: todo.tags,
-    };
   }
 
   private isHtmx(req: Request): boolean {
