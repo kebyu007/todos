@@ -27,7 +27,7 @@ export class NotificationsService {
 
     // OXIRIGA .getTime() QO'SHILDI:
     const now = new Date(
-      moment.tz('Asia/Tashkent').format('YYYY-MM-DDTHH:mm:ss.SSS'),
+      moment.tz('Asia/Tashkent').format('YYYY-MM-DDTHH:mm:ss.SSSZ'),
     ).getTime();
     const todos = await this.todosService.findDueReminderTodos();
     if (todos.length === 0) return;
