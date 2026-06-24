@@ -3,12 +3,7 @@
     <input class="input" type="text" name="title" value="{{title}}" required placeholder="Task title" />
     <input class="input" type="text" name="description" value="{{description}}" placeholder="Description" />
     
-    <input class="input" 
-       type="datetime-local" 
-       name="dueAt" 
-       value="{{dueAt}}" 
-       step="60" 
-       aria-label="Due date" />
+    <input class="input" type="datetime-local" name="dueAt" value="{{dueAt}}" step="1" />
       
     {{> priority-select id=id selected=priority}}
     <div class="todo-edit__actions">
