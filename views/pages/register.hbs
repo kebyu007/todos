@@ -27,10 +27,24 @@
     </label>
     <label class="field">
       <span>Timezone</span>
-      <input class="input" type="text" name="timezone" placeholder="UTC" value="UTC" />
+      <input class="input" type="text" id="timezone" name="timezone" placeholder="UTC" value="UTC" />
+      <small class="muted">Auto-detected from your browser — change only if needed.</small>
     </label>
     <button type="submit" class="btn btn--primary btn--block">Create account</button>
   </form>
 
   <p class="muted">Already registered? <a href="/login">Sign in</a></p>
 </section>
+
+<script>
+  (function () {
+    try {
+      var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      var el = document.getElementById('timezone');
+      // Only override the placeholder default, never a value the user typed.
+      if (tz && el && (!el.value || el.value === 'UTC')) el.value = tz;
+    } catch (e) {
+      /* Intl unsupported — leave the UTC default */
+    }
+  })();
+</script>

@@ -32,19 +32,29 @@ export class CreateTodoDto {
   @IsString()
   description?: string;
 
-  // Bo'sh form maydonlarini tozalash va xavfsiz ISO formatga o'girish
+  // Normalize the wall-clock the user typed to a plain local datetime string
+  // (NO timezone/Z suffix). The service is the single place that converts it
+  // to UTC using the user's own timezone — so storage is identical on a
+  // UTC AWS box and a local machine.
   @IsOptional()
   @Transform(({ value }) => {
     if (!value || value === '') return undefined;
-    
-    // AWS yoki istalgan muhitda vaqtni o'zgartirmasdan "kiritilganidek" UTC qilib saqlaymiz
+
+    // Parse as UTC purely to keep the wall-clock numbers intact across
+    // server timezones; format WITHOUT an offset so it stays a plain local
+    // datetime for the service to convert.
     const parsed = moment.utc(
       value,
-      ['YYYY-MM-DDTHH:mm', 'DD.MM.YYYY, HH:mm', 'DD.MM.YYYY HH:mm'],
+      [
+        'YYYY-MM-DDTHH:mm',
+        'YYYY-MM-DDTHH:mm:ss',
+        'DD.MM.YYYY, HH:mm',
+        'DD.MM.YYYY HH:mm',
+      ],
       true,
     );
-    
-    return parsed.isValid() ? parsed.format('YYYY-MM-DDTHH:mm:ss.SSSZ') : value;
+
+    return parsed.isValid() ? parsed.format('YYYY-MM-DDTHH:mm:ss') : value;
   })
   @IsDateString()
   dueAt?: string;

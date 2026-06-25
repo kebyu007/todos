@@ -31,7 +31,11 @@
     </label>
     <label class="field">
       <span>Timezone (IANA)</span>
-      <input class="input" type="text" name="timezone" value="{{user.timezone}}" placeholder="e.g. Asia/Tashkent" />
+      <input class="input" type="text" id="timezone" name="timezone" value="{{user.timezone}}" placeholder="e.g. Asia/Tashkent" />
+      <small class="muted">
+        <a href="#" id="detect-tz">Use my current timezone</a>
+        (<span id="detected-tz">detecting…</span>)
+      </small>
     </label>
     <div class="field field--inline">
       <span>Enable notifications</span>
@@ -75,3 +79,24 @@
     {{/if}}
   {{/unless}}
 </div>
+
+<script>
+  (function () {
+    var tz;
+    try {
+      tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch (e) {
+      tz = null;
+    }
+    var label = document.getElementById('detected-tz');
+    var link = document.getElementById('detect-tz');
+    var input = document.getElementById('timezone');
+    if (label) label.textContent = tz || 'unavailable';
+    if (link && input) {
+      link.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        if (tz) input.value = tz;
+      });
+    }
+  })();
+</script>

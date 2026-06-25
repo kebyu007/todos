@@ -36,14 +36,20 @@ export class UpdateTodoDto {
   @Transform(({ value }) => {
     if (!value || value === '') return undefined;
 
-    // AWS yoki istalgan muhitda vaqtni o'zgartirmasdan "kiritilganidek" UTC qilib saqlaymiz
+    // Keep the wall-clock numbers intact (no offset). The service converts
+    // this plain local datetime to UTC using the user's own timezone.
     const parsed = moment.utc(
       value,
-      ['YYYY-MM-DDTHH:mm', 'DD.MM.YYYY, HH:mm', 'DD.MM.YYYY HH:mm'],
+      [
+        'YYYY-MM-DDTHH:mm',
+        'YYYY-MM-DDTHH:mm:ss',
+        'DD.MM.YYYY, HH:mm',
+        'DD.MM.YYYY HH:mm',
+      ],
       true,
     );
 
-    return parsed.isValid() ? parsed.format('YYYY-MM-DDTHH:mm:ss.SSSZ') : value;
+    return parsed.isValid() ? parsed.format('YYYY-MM-DDTHH:mm:ss') : value;
   })
   @IsDateString()
   dueAt?: string;

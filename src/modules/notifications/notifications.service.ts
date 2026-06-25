@@ -4,7 +4,6 @@ import { TodosService } from '../todos/todos.service';
 import { UserService } from '../user/user.service';
 import { TelegramService } from '../telegram/telegram.service';
 import { UserDocument } from '../user/entities/user.entity';
-import * as moment from 'moment-timezone';
 
 const MINUTE = 60 * 1000;
 // Don't fire reminders whose moment passed long ago (e.g. after downtime).
@@ -25,11 +24,9 @@ export class NotificationsService {
   async sweep(): Promise<void> {
     if (!this.telegram.isEnabled()) return;
 
-    // OXIRIGA .getTime() QO'SHILDI:
-    // OXIRIGA .getTime() QO'SHILDI:
-    const now = new Date(
-      moment.tz('Asia/Tashkent').format('YYYY-MM-DDTHH:mm:ss.SSS') + 'Z',
-    ).getTime();
+    // Epoch ms is timezone-agnostic; dueAt is stored in UTC, so compare
+    // against the real current instant. (Timezone only matters for display.)
+    const now = Date.now();
     const todos = await this.todosService.findDueReminderTodos();
     if (todos.length === 0) return;
 

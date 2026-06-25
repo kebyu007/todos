@@ -61,7 +61,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       timezone && timezone.trim() ? timezone.trim() : 'Asia/Tashkent';
 
     const when = todo.dueAt
-      ? moment.utc(todo.dueAt).format('DD MMM, HH:mm') // <-- To'g'rilandi
+      ? moment.tz(todo.dueAt, activeZone).format('DD MMM, HH:mm')
       : '';
 
     const head =
@@ -253,7 +253,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       timezone && timezone.trim() ? timezone.trim() : 'Asia/Tashkent';
 
     const due = todo.dueAt
-      ? ` · 🗓 ${moment.utc(todo.dueAt).format('DD MMM, HH:mm')}` // <-- To'g'rilandi
+      ? ` · 🗓 ${moment.tz(todo.dueAt, activeZone).format('DD MMM, HH:mm')}`
       : '';
 
     // Diagnostika uchun oxiriga zona nomi qo'shildi
