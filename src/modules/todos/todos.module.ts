@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TodosService } from './todos.service';
 import { TodosController } from './todos.controller';
+import { TodosApiController } from './todos-api.controller';
 import { Todo, TodoSchema } from './entities/todo.entity';
 import { User, UserSchema } from '../user/entities/user.entity';
 
@@ -12,7 +13,7 @@ import { User, UserSchema } from '../user/entities/user.entity';
       { name: User.name, schema: UserSchema },
     ]),
   ],
-  controllers: [TodosController],
+  controllers: [TodosController, TodosApiController],
   providers: [TodosService],
   exports: [TodosService],
 })

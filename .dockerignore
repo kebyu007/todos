@@ -1,0 +1,17 @@
+node_modules
+dist
+mobile
+.git
+.gitignore
+.env
+.env.*
+*.log
+.vscode
+.idea
+docs
+test
+**/*.spec.ts
+README.md
+FRONTEND.md
+todos-nestjs-hbs-structure.md
+promt.txt

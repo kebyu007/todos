@@ -1,0 +1,10 @@
+node_modules/
+.expo/
+dist/
+web-build/
+*.log
+.DS_Store
+
+# Native build credentials — keep these out of version control
+google-services.json
+GoogleService-Info.plist

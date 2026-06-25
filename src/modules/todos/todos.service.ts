@@ -189,6 +189,83 @@ export class TodosService {
   }
 
   // =========================================================================
+  // JSON API (mobile app) — return raw documents; the controller serializes
+  // them with `serializeTodo` (dueAt as a UTC ISO string).
+  // =========================================================================
+
+  async apiList(ownerId: string, query: QueryTodosDto): Promise<TodoDocument[]> {
+    const user = await this.userModel.findById(ownerId).exec();
+    const timezone = user?.timezone || 'UTC';
+
+    const filter: Filter = { userId: new Types.ObjectId(ownerId) };
+    this.applyFilters(filter, query, timezone);
+
+    return this.todoModel
+      .find(filter)
+      .sort({ status: 1, dueAt: 1, createdAt: -1 })
+      .exec();
+  }
+
+  async apiCreate(dto: CreateTodoDto, ownerId: string): Promise<TodoDocument> {
+    const user = await this.userModel.findById(ownerId).exec();
+    const timezone = user?.timezone || 'UTC';
+    const dueAt = dto.dueAt ? moment.tz(dto.dueAt, timezone).toDate() : null;
+
+    return this.todoModel.create({
+      userId: new Types.ObjectId(ownerId),
+      title: dto.title,
+      description: dto.description ?? '',
+      dueAt,
+      priority: dto.priority,
+      status: dto.status,
+      tags: dto.tags ?? [],
+      reminders: this.defaultReminders(dueAt),
+    });
+  }
+
+  async apiFindOne(id: string, actor: AuthUser): Promise<TodoDocument> {
+    const todo = await this.getOrFail(id);
+    this.assertCanAccess(todo, actor);
+    return todo;
+  }
+
+  async apiUpdate(
+    id: string,
+    dto: UpdateTodoDto,
+    actor: AuthUser,
+  ): Promise<TodoDocument> {
+    const todo = await this.getOrFail(id);
+    this.assertCanAccess(todo, actor);
+
+    const user = await this.userModel.findById(todo.userId).exec();
+    const timezone = user?.timezone || 'UTC';
+
+    if (dto.title !== undefined) todo.title = dto.title;
+    if (dto.description !== undefined) todo.description = dto.description;
+    if (dto.dueAt !== undefined) {
+      const newDue = dto.dueAt ? moment.tz(dto.dueAt, timezone).toDate() : null;
+      if (newDue?.getTime() !== todo.dueAt?.getTime()) {
+        todo.dueAt = newDue;
+        todo.reminders = this.defaultReminders(newDue) as any;
+      }
+    }
+    if (dto.priority !== undefined) todo.priority = dto.priority;
+    if (dto.tags !== undefined) todo.tags = dto.tags;
+    if (dto.status !== undefined) this.setStatus(todo, dto.status);
+
+    return todo.save();
+  }
+
+  async apiToggle(id: string, actor: AuthUser): Promise<TodoDocument> {
+    const todo = await this.getOrFail(id);
+    this.assertCanAccess(todo, actor);
+    const next =
+      todo.status === TodoStatus.DONE ? TodoStatus.PENDING : TodoStatus.DONE;
+    this.setStatus(todo, next);
+    return todo.save();
+  }
+
+  // =========================================================================
   // BO'SHTA SERVISLAR VA SISTEMAVIY METODLAR (Aslidek qoldi, xalaqit qilinmadi)
   // =========================================================================
 

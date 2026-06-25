@@ -46,6 +46,11 @@ export class User {
   @Prop({ default: true })
   notificationsEnabled: boolean;
 
+  // Expo push tokens for the user's registered mobile devices (phase 3).
+  // One user can have several devices; tokens are deduped on registration.
+  @Prop({ type: [String], default: [] })
+  pushTokens: string[];
+
   @Prop({ type: String, enum: UserRoles, default: UserRoles.user })
   role: UserRoles;
 }

@@ -170,6 +170,23 @@ export class UserService {
     if (!res) throw new NotFoundException('User not found');
   }
 
+  // ---- Mobile push device tokens ----
+
+  // Registers an Expo push token for a device ($addToSet dedupes).
+  async addPushToken(id: string, token: string): Promise<void> {
+    this.assertObjectId(id);
+    await this.userModel
+      .findByIdAndUpdate(id, { $addToSet: { pushTokens: token } })
+      .exec();
+  }
+
+  async removePushToken(id: string, token: string): Promise<void> {
+    this.assertObjectId(id);
+    await this.userModel
+      .findByIdAndUpdate(id, { $pull: { pushTokens: token } })
+      .exec();
+  }
+
   // ---- Telegram linking ----
 
   // Profile view needs the (normally hidden) one-time link token.

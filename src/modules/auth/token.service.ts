@@ -47,6 +47,14 @@ export class TokenService {
     return { accessToken, refreshToken };
   }
 
+  // Verifies a refresh token's signature/expiry (used by the mobile refresh
+  // flow, where the token arrives in the request body rather than a cookie).
+  async verifyRefreshToken(token: string): Promise<{ sub: string }> {
+    return this.jwt.verifyAsync<{ sub: string }>(token, {
+      secret: this.config.get<string>('jwt.refreshSecret'),
+    });
+  }
+
   setAuthCookies(res: Response, tokens: IssuedTokens): void {
     const secure = this.config.get<boolean>('cookie.secure') ?? false;
     const base: CookieOptions = { httpOnly: true, secure };

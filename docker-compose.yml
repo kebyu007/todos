@@ -1,0 +1,34 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Not published to the host by default — only the app needs it. Uncomment
+    # to inspect the DB from your machine (e.g. Compass at localhost:27017).
+    # ports:
+    #   - '27017:27017'
+
+  app:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Override so the app talks to the mongo service, not localhost.
+      MONGO_URL: mongodb://mongo:27017/todos
+      PORT: '5000'
+      NODE_ENV: production
+    ports:
+      - '5000:5000'
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+volumes:
+  mongo-data:

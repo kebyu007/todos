@@ -13,7 +13,7 @@ export interface AccessTokenPayload {
   avatarUrl?: string | null;
 }
 
-// Reads the access token from the `access_token` cookie.
+// Reads the access token from the `access_token` cookie (web).
 const cookieExtractor = (req: Request): string | null => {
   return req?.cookies?.access_token ?? null;
 };
@@ -25,7 +25,12 @@ export class JwtAccessStrategy extends PassportStrategy(
 ) {
   constructor(config: ConfigService) {
     super({
-      jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
+      // Web sends the token as a cookie; the mobile app sends it as a
+      // `Authorization: Bearer <token>` header. Accept either.
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        cookieExtractor,
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ]),
       ignoreExpiration: false,
       secretOrKey: config.get<string>('jwt.accessSecret')!,
     });

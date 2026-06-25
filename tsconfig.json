@@ -24,5 +24,6 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "strictPropertyInitialization": false
-  }
+  },
+  "exclude": ["node_modules", "dist", "mobile"]
 }

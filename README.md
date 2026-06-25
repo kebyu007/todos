@@ -105,3 +105,32 @@ src/
 views/           layouts/, partials/, pages/ (+ pages/admin/)
 public/css/      app.css (light/dark themed)
 ```
+
+## Run with Docker
+
+Spin up the server **and** MongoDB together — no local Node/Mongo install needed.
+
+```bash
+cp .env.example .env      # first time only; edit secrets as needed
+docker compose up --build
+```
+
+The app comes up on **http://localhost:5000** (set by `PORT` in
+`docker-compose.yml`) and connects to the bundled `mongo` service automatically
+(compose overrides `MONGO_URL`). Mongo data persists in the `mongo-data` volume.
+
+Common commands:
+
+```bash
+docker compose up -d --build   # run in the background
+docker compose logs -f app     # follow server logs
+docker compose down            # stop (keeps the DB volume)
+docker compose down -v         # stop and wipe the DB
+```
+
+Notes:
+- For the **mobile app**, point `mobile/app.json` → `expo.extra.apiUrl` at your
+  machine's LAN IP on the same port, e.g. `http://192.168.1.100:5000`.
+- To change the port, edit both `PORT` and the `ports:` mapping in
+  `docker-compose.yml`.
+- `docker compose up app` rebuilds just the app after code changes.
