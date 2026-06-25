@@ -159,6 +159,28 @@ export class TodosService {
     return this.formatTodoWithTimezone(savedTodo, timezone);
   }
 
+  // 5b. Snooze: schedule another reminder N minutes from now.
+  async snooze(
+    id: string,
+    minutes: number,
+    actor: AuthUser,
+  ): Promise<{ remindAt: Date; todo: TodoDocument }> {
+    const todo = await this.getOrFail(id);
+    this.assertCanAccess(todo, actor);
+
+    const remindAt = new Date(Date.now() + minutes * 60_000);
+    todo.reminders.push({
+      offsetMinutes: 0,
+      sent: false,
+      sentAt: null,
+      jobId: null,
+      remindAt,
+    } as any);
+
+    await todo.save();
+    return { remindAt, todo };
+  }
+
   // 6. To'doni o'chirish
   async remove(id: string, actor: AuthUser): Promise<void> {
     const todo = await this.getOrFail(id);

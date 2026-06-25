@@ -48,7 +48,12 @@ export class NotificationsService {
 
       for (const reminder of todo.reminders) {
         if (reminder.sent) continue;
-        const fireAt = dueMs - reminder.offsetMinutes * MINUTE;
+        // Snoozed reminders carry an absolute fire time; the rest are offsets
+        // measured back from the due date.
+        const isSnooze = Boolean(reminder.remindAt);
+        const fireAt = isSnooze
+          ? new Date(reminder.remindAt!).getTime()
+          : dueMs - reminder.offsetMinutes * MINUTE;
         if (fireAt > now) continue; // not time yet
 
         // Only deliver to opted-in, linked users within the freshness window.
@@ -68,7 +73,8 @@ export class NotificationsService {
               owner!.telegramChatId!,
               todo,
               reminder.offsetMinutes,
-              timezone, // To'rtinchi argument qilib uzatdik!
+              timezone,
+              isSnooze,
             );
           } catch (err) {
             this.logger.error(

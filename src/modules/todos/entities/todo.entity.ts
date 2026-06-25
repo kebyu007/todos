@@ -21,6 +21,10 @@ class Reminder {
   @Prop({ type: Date, default: null }) sentAt: Date | null;
 
   @Prop({ type: String, default: null }) jobId: string | null;
+
+  // Absolute fire time (UTC) for snoozed reminders ("remind me again at X").
+  // When set it overrides the offset-from-dueAt calculation in the sweeper.
+  @Prop({ type: Date, default: null }) remindAt: Date | null;
 }
 
 @Schema({ timestamps: true })

@@ -53,6 +53,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     todo: TodoDocument,
     offsetMinutes: number,
     timezone: string = 'Asia/Tashkent',
+    isSnooze = false,
   ): Promise<void> {
     if (!this.bot) return;
 
@@ -64,8 +65,9 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       ? moment.tz(todo.dueAt, activeZone).format('DD MMM, HH:mm')
       : '';
 
-    const head =
-      offsetMinutes >= 60
+    const head = isSnooze
+      ? `😴 Snoozed reminder`
+      : offsetMinutes >= 60
         ? `⏰ Due in 1 hour`
         : offsetMinutes > 0
           ? `⏰ Due in ${offsetMinutes} min`
@@ -106,6 +108,16 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
 
     bot.action(/^done:(.+)$/, async (ctx) => this.handleToggle(ctx));
     bot.action(/^del:(.+)$/, async (ctx) => this.handleDelete(ctx));
+
+    // Snooze stepper: open → adjust (±5) → confirm, or cancel.
+    bot.action(/^snooze:(.+)$/, async (ctx) => this.handleSnoozeOpen(ctx));
+    bot.action(/^snz([+-]):([^:]+):(\d+)$/, async (ctx) =>
+      this.handleSnoozeAdjust(ctx),
+    );
+    bot.action(/^snzok:([^:]+):(\d+)$/, async (ctx) =>
+      this.handleSnoozeConfirm(ctx),
+    );
+    bot.action(/^snzx:(.+)$/, async (ctx) => this.handleSnoozeCancel(ctx));
 
     bot.on('text', async (ctx) => {
       if (ctx.message.text.startsWith('/')) return;
@@ -260,17 +272,115 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
     return `${mark} *${this.escape(todo.title)}*${due} `;
   }
 
-  // TelegramService klassining eng oxiriga, } yopilishidan tepaga qo'ying:
+  // ----- Snooze stepper config & keyboards -----
+  private static readonly SNOOZE_DEFAULT = 25;
+  private static readonly SNOOZE_STEP = 5;
+  private static readonly SNOOZE_MIN = 5;
+  private static readonly SNOOZE_MAX = 180;
+
+  private clampSnooze(mins: number): number {
+    if (Number.isNaN(mins)) return TelegramService.SNOOZE_DEFAULT;
+    return Math.min(
+      TelegramService.SNOOZE_MAX,
+      Math.max(TelegramService.SNOOZE_MIN, mins),
+    );
+  }
+
+  // Default row: Done · Snooze · Delete
+  private mainKeyboardRows(id: string, done: boolean) {
+    return [
+      [
+        Markup.button.callback(done ? '↩️ Reopen' : '✅ Done', `done:${id}`),
+        Markup.button.callback('😴 Snooze', `snooze:${id}`),
+        Markup.button.callback('🗑 Delete', `del:${id}`),
+      ],
+    ];
+  }
+
+  // Stepper row: −5 · [confirm N min] · +5  with a Cancel below.
+  private snoozeMarkup(id: string, mins: number) {
+    return Markup.inlineKeyboard([
+      [
+        Markup.button.callback('➖ 5', `snz-:${id}:${mins}`),
+        Markup.button.callback(`😴 ${mins} min`, `snzok:${id}:${mins}`),
+        Markup.button.callback('5 ➕', `snz+:${id}:${mins}`),
+      ],
+      [Markup.button.callback('✖️ Cancel', `snzx:${id}`)],
+    ]).reply_markup;
+  }
+
   private todoButtons(todo: any) {
     const id =
       (todo._id ? todo._id.toString() : todo.id?.toString()) || 'unknown';
     const done = todo.status === TodoStatus.DONE;
-    return Markup.inlineKeyboard([
-      [
-        Markup.button.callback(done ? '↩️ Reopen' : '✅ Done', `done:${id}`),
-        Markup.button.callback('🗑 Delete', `del:${id}`),
-      ],
-    ]);
+    return Markup.inlineKeyboard(this.mainKeyboardRows(id, done));
+  }
+
+  // Open the stepper at the default value.
+  private async handleSnoozeOpen(ctx: Context): Promise<void> {
+    const id = (ctx as unknown as { match: RegExpExecArray }).match[1];
+    await ctx.answerCbQuery();
+    await ctx.editMessageReplyMarkup(
+      this.snoozeMarkup(id, TelegramService.SNOOZE_DEFAULT),
+    );
+  }
+
+  // ± a step, re-rendering the stepper (clamped to the allowed range).
+  private async handleSnoozeAdjust(ctx: Context): Promise<void> {
+    const match = (ctx as unknown as { match: RegExpExecArray }).match;
+    const sign = match[1];
+    const id = match[2];
+    const current = parseInt(match[3], 10);
+    const next = this.clampSnooze(
+      current + (sign === '+' ? 1 : -1) * TelegramService.SNOOZE_STEP,
+    );
+
+    if (next === current) {
+      await ctx.answerCbQuery(
+        sign === '+'
+          ? `Max ${TelegramService.SNOOZE_MAX} min`
+          : `Min ${TelegramService.SNOOZE_MIN} min`,
+      );
+      return;
+    }
+
+    await ctx.answerCbQuery();
+    await ctx.editMessageReplyMarkup(this.snoozeMarkup(id, next));
+  }
+
+  // Confirm: persist the snooze and restore the default buttons.
+  private async handleSnoozeConfirm(ctx: Context): Promise<void> {
+    const user = await this.requireUser(ctx);
+    if (!user) return;
+
+    const match = (ctx as unknown as { match: RegExpExecArray }).match;
+    const id = match[1];
+    const mins = this.clampSnooze(parseInt(match[2], 10));
+
+    try {
+      const { remindAt } = await this.todosService.snooze(
+        id,
+        mins,
+        this.actor(user),
+      );
+      const zone = user.timezone || 'Asia/Tashkent';
+      const at = moment.tz(remindAt, zone).format('HH:mm');
+      await ctx.answerCbQuery(`😴 Snoozed ${mins} min · back at ${at}`);
+      await ctx.editMessageReplyMarkup(
+        Markup.inlineKeyboard(this.mainKeyboardRows(id, false)).reply_markup,
+      );
+    } catch {
+      await ctx.answerCbQuery('Could not snooze this task');
+    }
+  }
+
+  // Cancel: drop the stepper, restore the default buttons.
+  private async handleSnoozeCancel(ctx: Context): Promise<void> {
+    const id = (ctx as unknown as { match: RegExpExecArray }).match[1];
+    await ctx.answerCbQuery();
+    await ctx.editMessageReplyMarkup(
+      Markup.inlineKeyboard(this.mainKeyboardRows(id, false)).reply_markup,
+    );
   }
 
   private escape(s: string): string {
