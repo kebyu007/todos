@@ -9,8 +9,10 @@
     "newArchEnabled": true,
     "android": {
       "package": "com.example.todos",
-      "googleServicesFile": "./google-services.json",
-      "permissions": ["RECEIVE_BOOT_COMPLETED", "SCHEDULE_EXACT_ALARM"]
+      "permissions": [
+        "RECEIVE_BOOT_COMPLETED",
+        "SCHEDULE_EXACT_ALARM"
+      ]
     },
     "ios": {
       "supportsTablet": true,
@@ -25,10 +27,11 @@
       ]
     ],
     "extra": {
-      "apiUrl": "http://192.168.1.100:3000",
+      "apiUrl": "https://kebyu.uz",
       "eas": {
-        "projectId": ""
+        "projectId": "258b0814-91bd-41f6-8237-f67ded66a479"
       }
-    }
+    },
+    "owner": "kebyu1"
   }
 }

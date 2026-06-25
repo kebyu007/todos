@@ -30,5 +30,22 @@ services:
       mongo:
         condition: service_healthy
 
+  # Reverse proxy with automatic HTTPS (Let's Encrypt) for the domain.
+  # Fetches/renews the TLS cert for kebyu.uz and proxies to the app.
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - app
+
 volumes:
   mongo-data:
+  caddy-data:
+  caddy-config:

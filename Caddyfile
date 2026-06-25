@@ -1,0 +1,6 @@
+# Automatic HTTPS for the domain. Caddy obtains and renews a free Let's Encrypt
+# certificate, terminates TLS, and forwards requests to the app container.
+# Requirements: DNS A record kebyu.uz -> server IP, and ports 80 + 443 open.
+kebyu.uz {
+	reverse_proxy app:5000
+}
